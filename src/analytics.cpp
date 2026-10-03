@@ -1,52 +1,70 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <iomanip>
 
 using namespace std;
 
 int main() {
-    int readings;
-    double totalEnergy;
+    ifstream logFile("logs/smart_meter.log");
 
-    cout << "==================================" << endl;
-    cout << " Smart Energy Analytics Agent" << endl;
-    cout << "==================================" << endl;
-
-    cout << "Enter number of readings: ";
-    cin >> readings;
-
-    cout << "Enter total energy consumed (kWh): ";
-    cin >> totalEnergy;
-
-    if (readings <= 0 || totalEnergy < 0) {
-        cout << "Invalid input." << endl;
+    if (!logFile) {
+        cerr << "Error: Cannot open smart meter log file." << endl;
         return 1;
+    }
+
+    string line;
+    int readings = 0;
+    double totalEnergy = 0.0;
+
+    while (getline(logFile, line)) {
+
+        if (line.find("Energy:") != string::npos &&
+            line.find("kWh") != string::npos) {
+
+            size_t start = line.find(":") + 1;
+            size_t end = line.find("kWh");
+
+            string value = line.substr(start, end - start);
+
+            totalEnergy += stod(value);
+            readings++;
+        }
+    }
+
+    logFile.close();
+
+    if (readings == 0) {
+        cout << "No energy readings found." << endl;
+        return 0;
     }
 
     double averageEnergy = totalEnergy / readings;
 
-    // Example electricity tariff
     const double tariff = 6.50;
-
     double estimatedCost = totalEnergy * tariff;
 
     cout << fixed << setprecision(2);
 
-    cout << "\n========== Analytics Report ==========" << endl;
-    cout << "Total Readings     : " << readings << endl;
-    cout << "Total Energy       : " << totalEnergy << " kWh" << endl;
-    cout << "Average Energy     : " << averageEnergy << " kWh" << endl;
-    cout << "Tariff             : Rs. " << tariff << " / kWh" << endl;
-    cout << "Estimated Cost      : Rs. " << estimatedCost << endl;
+    cout << "\n========================================" << endl;
+    cout << "       SMART ENERGY ANALYTICS" << endl;
+    cout << "========================================" << endl;
 
-    if (averageEnergy < 1.0) {
-        cout << "Usage Category     : Low" << endl;
+    cout << "Total Readings : " << readings << endl;
+    cout << "Total Energy   : " << totalEnergy << " kWh" << endl;
+    cout << "Average Energy : " << averageEnergy << " kWh" << endl;
+    cout << "Tariff         : Rs. " << tariff << " / kWh" << endl;
+    cout << "Estimated Cost : Rs. " << estimatedCost << endl;
+
+    if (averageEnergy < 0.05) {
+        cout << "Usage Category : Low" << endl;
     }
-    else if (averageEnergy < 3.0) {
-        cout << "Usage Category     : Moderate" << endl;
+    else if (averageEnergy < 0.10) {
+        cout << "Usage Category : Moderate" << endl;
     }
     else {
-        cout << "Usage Category     : High" << endl;
+        cout << "Usage Category : High" << endl;
     }
 
     return 0;
-}
+}  
