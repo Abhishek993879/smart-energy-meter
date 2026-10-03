@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
-
 using namespace std;
 
 int main() {
@@ -14,8 +13,10 @@ int main() {
     }
 
     string line;
+
     int readings = 0;
     double totalEnergy = 0.0;
+    double peakEnergy = 0.0;
 
     while (getline(logFile, line)) {
 
@@ -27,8 +28,14 @@ int main() {
 
             string value = line.substr(start, end - start);
 
-            totalEnergy += stod(value);
+            double energy = stod(value);
+
+            totalEnergy += energy;
             readings++;
+
+            if (energy > peakEnergy) {
+                peakEnergy = energy;
+            }
         }
     }
 
@@ -41,7 +48,9 @@ int main() {
 
     double averageEnergy = totalEnergy / readings;
 
+    // Example/configurable tariff
     const double tariff = 6.50;
+
     double estimatedCost = totalEnergy * tariff;
 
     cout << fixed << setprecision(2);
@@ -53,6 +62,7 @@ int main() {
     cout << "Total Readings : " << readings << endl;
     cout << "Total Energy   : " << totalEnergy << " kWh" << endl;
     cout << "Average Energy : " << averageEnergy << " kWh" << endl;
+    cout << "Peak Energy    : " << peakEnergy << " kWh" << endl;
     cout << "Tariff         : Rs. " << tariff << " / kWh" << endl;
     cout << "Estimated Cost : Rs. " << estimatedCost << endl;
 
@@ -66,5 +76,13 @@ int main() {
         cout << "Usage Category : High" << endl;
     }
 
+    // High usage alert
+    if (peakEnergy >= 0.10) {
+        cout << "Alert          : HIGH ENERGY USAGE DETECTED!" << endl;
+    }
+    else {
+        cout << "Alert          : Normal energy usage." << endl;
+    }
+
     return 0;
-}  
+}
